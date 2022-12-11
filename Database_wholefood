@@ -1,0 +1,540 @@
+
+
+-- DIETARY PREFERENCES EFFECT PRICES ? 
+
+
+use ddmban_sql_analysis;
+
+
+use ddmban_data ;
+
+
+WITH `TA` AS ( 
+
+				SELECT
+
+ID, category, subcategory, product,
+  
+				replace(price, ',', '') AS new_price,
+                (vegan + glutenfree+ ketofriendly + vegetarian + organic + dairyfree + 
+                sugarconscious + paleofriendly + wholefoodsdiet + lowsodium + kosher + lowfat +engine2) AS sum_pref_diet,
+                
+               
+			
+vegan, glutenfree, ketofriendly , vegetarian , organic , dairyfree ,
+sugarconscious , paleofriendly , wholefoodsdiet ,lowsodium ,
+kosher , lowfat, engine2, caloriesperserving ,
+         
+         
+                totalsizeunits, 
+                totalsize,
+                
+                CASE WHEN totalsizeunits = 'g' 	THEN  totalsize
+			WHEN totalsizeunits = 'fl oz' THEN   totalsize*28.3495
+			WHEN totalsizeunits = 'oz'	 THEN   totalsize*28.3495
+            WHEN totalsizeunits = 'ml' THEN  totalsize
+            WHEN totalsizeunits = 'lb' THEN  totalsize*453.592
+            END AS total_size_per_g
+                      
+FROM ddmban_data ),
+
+
+-- SECOND TABLE 
+
+
+
+`TB` AS ( 
+
+
+
+
+
+
+
+			SELECT 
+
+ID, category, subcategory, product,
+
+vegan, glutenfree, ketofriendly , vegetarian , organic , dairyfree ,
+sugarconscious , paleofriendly , wholefoodsdiet ,lowsodium ,
+ kosher , lowfat, engine2, caloriesperserving , 
+
+				new_price,
+                sum_pref_diet,
+				totalsizeunits, 
+                totalsize,
+                total_size_per_g,
+
+FORMAT (new_price /  total_size_per_g, 2) as price_per_g
+
+FROM `TA`
+
+WHERE total_size_per_g is not null
+AND new_price /  total_size_per_g is not null 
+			
+		 ),
+         
+`Yes_vegan` AS (SELECT * FROM `TB` WHERE `vegan` = 1),
+`No_vegan` AS (SELECT * FROM `TB` WHERE `vegan` = 0),
+`Yes_glutenfree` AS (SELECT * FROM `TB` WHERE `glutenfree` = 1),
+`No_glutenfree` AS (SELECT * FROM `TB` WHERE `glutenfree` = 0),
+`Yes_ketofriendly` AS (SELECT * FROM `TB` WHERE `ketofriendly` = 1),
+`No_ketofriendly` AS (SELECT * FROM `TB` WHERE `ketofriendly` = 0),
+`Yes_vegetarian` AS (SELECT * FROM `TB` WHERE `vegetarian` = 1),
+`No_vegetarian` AS (SELECT * FROM `TB` WHERE `vegetarian` = 0),
+`Yes_organic`  AS (SELECT * FROM `TB` WHERE `organic` = 1),
+`No_organic`  AS (SELECT * FROM `TB` WHERE `organic` = 0),
+`Yes_dairyfree`  AS (SELECT * FROM `TB` WHERE `dairyfree` = 1),
+`No_dairyfree`  AS (SELECT * FROM `TB` WHERE `dairyfree` = 0), 
+`Yes_sugarconscious`  AS (SELECT * FROM `TB` WHERE `sugarconscious` = 1),
+`No_sugarconscious`  AS (SELECT * FROM `TB` WHERE `sugarconscious` = 0),
+`Yes_paleofriendly`  AS (SELECT * FROM `TB` WHERE `paleofriendly` = 1),
+`No_paleofriendly`  AS (SELECT * FROM `TB` WHERE `paleofriendly` = 0), 
+`Yes_wholefoodsdiet`  AS (SELECT * FROM `TB` WHERE `wholefoodsdiet` = 1),
+`No_wholefoodsdiet`  AS (SELECT * FROM `TB` WHERE `wholefoodsdiet` = 0), 
+`Yes_lowsodium`  AS (SELECT * FROM `TB` WHERE `lowsodium` = 1),
+`No_lowsodium`  AS (SELECT * FROM `TB` WHERE `lowsodium` = 0), 
+`Yes_kosher`  AS (SELECT * FROM `TB` WHERE `kosher` = 1), 
+`No_kosher`  AS (SELECT * FROM `TB` WHERE `kosher` = 0),
+`Yes_lowfat`  AS (SELECT * FROM `TB` WHERE `lowfat` = 1), 
+`No_lowfat`  AS (SELECT * FROM `TB` WHERE `lowfat` = 0),
+`Yes_engine2`  AS (SELECT * FROM `TB` WHERE `engine2` =1),
+`No_engine2`  AS (SELECT * FROM `TB` WHERE `engine2` = 0), 
+`Yes_caloriesperserving`  AS (SELECT * FROM `TB` WHERE `caloriesperserving` = 1),
+`No_caloriesperserving`  AS (SELECT * FROM `TB` WHERE `caloriesperserving` = 0), 
+
+
+
+
+
+
+
+`T_test_vegan` AS (SELECT DISTINCT 'vegan'	AS diet_pref,
+
+FORMAT ((   (SELECT AVG(price_per_g) FROM `Yes_vegan`) - (SELECT AVG(price_per_g) FROM `No_vegan`))  
+				/ 
+		(
+			 SQRT(
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `Yes_vegan`)) / (SELECT COUNT(price_per_g) FROM `Yes_vegan`))
+		+ 
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `No_vegan`)) / (SELECT COUNT(price_per_g) FROM `No_vegan`))
+				  ) 
+		) 
+		,2 )AS t_test  FROM `TB`),
+                          
+
+`Avg_vegan` AS (				(SELECT (SELECT FORMAT( AVG(price_per_g),2) FROM `TB` WHERE vegan = 1 )as  avg_1,
+ AVG(price_per_g)as avg_0 FROM `TB` WHERE vegan = 0) ),
+ 
+ `STDDEV_vegan` AS (			(SELECT (SELECT FORMAT( STDDEV(price_per_g),2) FROM `TB` WHERE vegan = 1 )as  Std_1,
+ AVG(price_per_g)as Std_0 FROM `TB` WHERE vegan = 0) ),
+ 
+ 
+ `Min_vegan` AS (				(SELECT (SELECT FORMAT( MIN(price_per_g),2) FROM `TB` WHERE vegan = 1 )as  min_1,
+ min(price_per_g)as min_0 FROM `TB` WHERE vegan = 0) ),
+ 
+ 
+ `vegan_data` AS (SELECT 'vegan', t.t_test, av.avg_1 , av.avg_0 , min_vegan.min_1, min_vegan.min_0,Std_1,Std_0
+ FROM  `T_test_vegan` AS t CROSS JOIN `Avg_vegan` AS av
+ cross join `Min_vegan` as min_vegan
+ CROSS JOIN `STDDEV_vegan` AS std),
+ 
+ 
+ 
+
+
+`T_test_glutenfree` AS (SELECT DISTINCT 'glutenfree'	AS diet_pref,
+
+FORMAT ((   (SELECT AVG(price_per_g) FROM `Yes_glutenfree`) - (SELECT AVG(price_per_g) FROM `No_glutenfree`))  
+				/ 
+		(
+			 SQRT(
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `Yes_glutenfree`)) / (SELECT COUNT(price_per_g) FROM `Yes_glutenfree`))
+		+ 
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `No_glutenfree`)) / (SELECT COUNT(price_per_g) FROM `No_glutenfree`))
+				  ) 
+		) 
+		,2 )AS t_test  FROM `TB`),
+
+`Avg_glutenfree` AS (				(SELECT (SELECT AVG(price_per_g) FROM `TB` WHERE glutenfree = 1 )as  avg_1,
+ AVG(price_per_g)as avg_0 FROM `TB` WHERE glutenfree = 0) ),
+ 
+`STDDEV_glutenfree` AS (			(SELECT (SELECT FORMAT( STDDEV(price_per_g),2) FROM `TB` WHERE glutenfree = 1 )as  Std_1,
+ AVG(price_per_g)as Std_0 FROM `TB` WHERE glutenfree = 0) ),
+ 
+ `Min_glutenfree` AS (				(SELECT (SELECT MIN(price_per_g) FROM `TB` WHERE glutenfree = 1 )as  min_1,
+ min(price_per_g)as min_0 FROM `TB` WHERE glutenfree = 0) ),
+ 
+ `glutenfree_data` AS (SELECT 'glutenfree', t.t_test, av.avg_1 , av.avg_0 , min_glutenfree.min_1, min_glutenfree.min_0,Std_1,Std_0
+ FROM  `T_test_glutenfree` AS t CROSS JOIN `Avg_glutenfree` AS av
+ cross join `Min_glutenfree` as min_glutenfree
+  CROSS JOIN `STDDEV_glutenfree` AS std),
+  
+
+`temp_tabl_1` as ( SELECT * FROM `vegan_data` UNION ALL SELECT * FROM  `glutenfree_data`),
+ 
+
+  
+ 
+ 
+ 
+ 
+`T_test_vegetarian` AS (SELECT DISTINCT 'vegetarian'	AS diet_pref,
+
+FORMAT ((   (SELECT AVG(price_per_g) FROM `Yes_vegetarian`) - (SELECT AVG(price_per_g) FROM `No_vegetarian`))  
+				/ 
+		(
+			 SQRT(
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `Yes_vegetarian`)) / (SELECT COUNT(price_per_g) FROM `Yes_vegetarian`))
+		+ 
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `No_vegetarian`)) / (SELECT COUNT(price_per_g) FROM `No_vegetarian`))
+				  ) 
+		) 
+		,2 )AS t_test  FROM `TB`),
+
+
+`Avg_vegetarian` AS (				(SELECT (SELECT AVG(price_per_g) FROM `TB` WHERE vegetarian = 1 )as  avg_1,
+ AVG(price_per_g)as avg_0 FROM `TB` WHERE vegetarian = 0) ),
+ 
+ `STDDEV_vegetarian` AS (			(SELECT (SELECT FORMAT( STDDEV(price_per_g),2) FROM `TB` WHERE vegetarian  = 1 )as  Std_1,
+ AVG(price_per_g)as Std_0 FROM `TB` WHERE vegetarian = 0) ),
+ 
+ `Min_vegetarian` AS (				(SELECT (SELECT MIN(price_per_g) FROM `TB` WHERE vegetarian = 1 )as  min_1,
+ min(price_per_g)as min_0 FROM `TB` WHERE vegetarian = 0) ),
+ 
+ `vegetarian_data` AS (SELECT 'vegetarian', t.t_test, av.avg_1 , av.avg_0 , min_vegetarian.min_1, min_vegetarian.min_0, Std_1, Std_0
+ FROM  `T_test_vegetarian` AS t CROSS JOIN `Avg_vegetarian` AS av
+ cross join `Min_vegetarian` as min_vegetarian
+  CROSS JOIN `STDDEV_vegetarian` AS std),
+
+ 
+`temp_tabl_2` as ( SELECT * FROM `temp_tabl_1` UNION ALL SELECT * FROM  `vegetarian_data`),
+  
+
+
+   
+ 
+ 
+`T_test_ketofriendly` AS (SELECT DISTINCT 'ketofriendly'	AS diet_pref,
+
+FORMAT ((   (SELECT AVG(price_per_g) FROM `Yes_ketofriendly`) - (SELECT AVG(price_per_g) FROM `No_ketofriendly`))  
+				/ 
+		(
+			 SQRT(
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `Yes_ketofriendly`)) / (SELECT COUNT(price_per_g) FROM `Yes_ketofriendly`))
+		+ 
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `No_ketofriendly`)) / (SELECT COUNT(price_per_g) FROM `No_ketofriendly`))
+				  ) 
+		) 
+		,2 )AS t_test  FROM `TB`),
+
+`Avg_ketofriendly` AS (				(SELECT (SELECT AVG(price_per_g) FROM `TB` WHERE ketofriendly = 1 )as  avg_1,
+ AVG(price_per_g)as avg_0 FROM `TB` WHERE ketofriendly = 0) ),
+ 
+ `STDDEV_ketofriendly` AS (			(SELECT (SELECT FORMAT( STDDEV(price_per_g),2) FROM `TB` WHERE ketofriendly  = 1 )as  Std_1,
+ AVG(price_per_g)as Std_0 FROM `TB` WHERE ketofriendly = 0) ),
+ 
+ `Min_ketofriendly` AS (				(SELECT (SELECT MIN(price_per_g) FROM `TB` WHERE ketofriendly = 1 )as  min_1,
+ min(price_per_g)as min_0 FROM `TB` WHERE ketofriendly = 0) ),
+ 
+ `ketofriendly_data` AS (SELECT 'ketofriendly', t.t_test, av.avg_1 , av.avg_0 , min_ketofriendly.min_1, min_ketofriendly.min_0, Std_1, Std_0
+ FROM  `T_test_ketofriendly` AS t CROSS JOIN `Avg_ketofriendly` AS av
+ cross join `Min_ketofriendly` as min_ketofriendly
+ CROSS JOIN `STDDEV_ketofriendly` AS std),
+ 
+ `temp_tabl_3` as ( SELECT * FROM `temp_tabl_2` UNION ALL SELECT * FROM  `ketofriendly_data`),
+ 
+
+   
+   
+   
+
+ 
+ `T_test_organic` AS (SELECT DISTINCT 'organic'	AS diet_pref,
+
+FORMAT ((   (SELECT AVG(price_per_g) FROM `Yes_organic`) - (SELECT AVG(price_per_g) FROM `No_organic`))  
+				/ 
+		(
+			 SQRT(
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `Yes_organic`)) / (SELECT COUNT(price_per_g) FROM `Yes_organic`))
+		+ 
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `No_organic`)) / (SELECT COUNT(price_per_g) FROM `No_organic`))
+				  ) 
+		) 
+		,2 )AS t_test  FROM `TB`),
+
+`Avg_organic` AS (				(SELECT (SELECT AVG(price_per_g) FROM `TB` WHERE organic = 1 )as  avg_1,
+ AVG(price_per_g)as avg_0 FROM `TB` WHERE organic = 0) ),
+ 
+ `STDDEV_organic` AS (			(SELECT (SELECT FORMAT( STDDEV(price_per_g),2) FROM `TB` WHERE organic  = 1 )as  Std_1,
+ AVG(price_per_g)as Std_0 FROM `TB` WHERE organic = 0) ),
+ 
+ `Min_organic` AS (				(SELECT (SELECT MIN(price_per_g) FROM `TB` WHERE organic = 1 )as  min_1,
+ min(price_per_g)as min_0 FROM `TB` WHERE organic = 0) ),
+ 
+ `organic_data` AS (SELECT 'organic', t.t_test, av.avg_1 , av.avg_0 , min_organic.min_1, min_organic.min_0,Std_1, Std_0
+ FROM  `T_test_organic` AS t CROSS JOIN `Avg_organic` AS av
+ cross join `Min_organic` as min_organic
+ CROSS JOIN `STDDEV_organic` AS std),
+ 
+ `temp_tabl_4` as ( SELECT * FROM `temp_tabl_3` UNION ALL SELECT * FROM  `organic_data`),
+
+
+
+ `T_test_dairyfree` AS (SELECT DISTINCT 'dairyfree'	AS diet_pref,
+
+FORMAT ((   (SELECT AVG(price_per_g) FROM `Yes_dairyfree`) - (SELECT AVG(price_per_g) FROM `No_dairyfree`))  
+				/ 
+		(
+			 SQRT(
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `Yes_dairyfree`)) / (SELECT COUNT(price_per_g) FROM `Yes_dairyfree`))
+		+ 
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `No_dairyfree`)) / (SELECT COUNT(price_per_g) FROM `No_dairyfree`))
+				  ) 
+		) 
+		,2 )AS t_test  FROM `TB`),
+
+`Avg_dairyfree` AS (				(SELECT (SELECT AVG(price_per_g) FROM `TB` WHERE dairyfree = 1 )as  avg_1,
+ AVG(price_per_g)as avg_0 FROM `TB` WHERE dairyfree = 0) ),
+ 
+ `STDDEV_dairyfree` AS (			(SELECT (SELECT FORMAT( STDDEV(price_per_g),2) FROM `TB` WHERE dairyfree  = 1 )as  Std_1,
+ AVG(price_per_g)as Std_0 FROM `TB` WHERE dairyfree = 0) ),
+ 
+ `Min_dairyfree` AS (				(SELECT (SELECT MIN(price_per_g) FROM `TB` WHERE dairyfree = 1 )as  min_1,
+ min(price_per_g)as min_0 FROM `TB` WHERE dairyfree = 0) ),
+ 
+ `dairyfree_data` AS (SELECT 'dairyfree', t.t_test, av.avg_1 , av.avg_0 , min_dairyfree.min_1, min_dairyfree.min_0,Std_1, Std_0
+ FROM  `T_test_dairyfree` AS t CROSS JOIN `Avg_dairyfree` AS av
+ cross join `Min_dairyfree` as min_dairyfree
+ CROSS JOIN `STDDEV_dairyfree` AS std),
+ 
+ `temp_tabl_5` as ( SELECT * FROM `temp_tabl_4` UNION ALL SELECT * FROM  `dairyfree_data`),
+
+
+ 
+ `T_test_sugarconscious` AS (SELECT DISTINCT 'sugarconscious'	AS diet_pref,
+
+FORMAT ((   (SELECT AVG(price_per_g) FROM `Yes_sugarconscious`) - (SELECT AVG(price_per_g) FROM `No_sugarconscious`))  
+				/ 
+		(
+			 SQRT(
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `Yes_sugarconscious`)) / (SELECT COUNT(price_per_g) FROM `Yes_sugarconscious`))
+		+ 
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `No_sugarconscious`)) / (SELECT COUNT(price_per_g) FROM `No_sugarconscious`))
+				  ) 
+		) 
+		,2 )AS t_test  FROM `TB`),
+
+`Avg_sugarconscious` AS (				(SELECT (SELECT AVG(price_per_g) FROM `TB` WHERE sugarconscious = 1 )as  avg_1,
+ AVG(price_per_g)as avg_0 FROM `TB` WHERE sugarconscious = 0) ),
+ 
+ 
+ `STDDEV_sugarconscious` AS (			(SELECT (SELECT FORMAT( STDDEV(price_per_g),2) FROM `TB` WHERE sugarconscious  = 1 )as  Std_1,
+ AVG(price_per_g)as Std_0 FROM `TB` WHERE sugarconscious = 0) ),
+ 
+ `Min_sugarconscious` AS (				(SELECT (SELECT MIN(price_per_g) FROM `TB` WHERE sugarconscious = 1 )as  min_1,
+ min(price_per_g)as min_0 FROM `TB` WHERE sugarconscious = 0) ),
+ 
+ `sugarconscious_data` AS (SELECT 'sugarconscious', t.t_test, av.avg_1 , av.avg_0 , min_sugarconscious.min_1, min_sugarconscious.min_0,Std_1, Std_0
+ FROM  `T_test_sugarconscious` AS t CROSS JOIN `Avg_sugarconscious` AS av
+ cross join `Min_sugarconscious` as min_sugarconscious
+ CROSS JOIN `STDDEV_sugarconscious` AS std),
+ 
+ `temp_tabl_6` as ( SELECT * FROM `temp_tabl_5` UNION ALL SELECT * FROM  `sugarconscious_data`),
+ 
+ 
+ 
+ 
+ 
+  `T_test_paleofriendly` AS (SELECT DISTINCT 'paleofriendly'	AS diet_pref,
+
+FORMAT ((   (SELECT AVG(price_per_g) FROM `Yes_paleofriendly`) - (SELECT AVG(price_per_g) FROM `No_paleofriendly`))  
+				/ 
+		(
+			 SQRT(
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `Yes_paleofriendly`)) / (SELECT COUNT(price_per_g) FROM `Yes_paleofriendly`))
+		+ 
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `No_paleofriendly`)) / (SELECT COUNT(price_per_g) FROM `No_paleofriendly`))
+				  ) 
+		) 
+		,2 )AS t_test  FROM `TB`),
+
+`Avg_paleofriendly` AS (				(SELECT (SELECT AVG(price_per_g) FROM `TB` WHERE paleofriendly = 1 )as  avg_1,
+ AVG(price_per_g)as avg_0 FROM `TB` WHERE paleofriendly = 0) ),
+ 
+  `STDDEV_paleofriendly` AS (			(SELECT (SELECT FORMAT( STDDEV(price_per_g),2) FROM `TB` WHERE paleofriendly  = 1 )as  Std_1,
+ AVG(price_per_g)as Std_0 FROM `TB` WHERE paleofriendly = 0) ),
+ 
+ `Min_paleofriendly` AS (				(SELECT (SELECT MIN(price_per_g) FROM `TB` WHERE paleofriendly = 1 )as  min_1,
+ min(price_per_g)as min_0 FROM `TB` WHERE paleofriendly = 0) ),
+ 
+ `paleofriendly_data` AS (SELECT 'paleofriendly', t.t_test, av.avg_1 , av.avg_0 , min_paleofriendly.min_1, min_paleofriendly.min_0,Std_1, Std_0
+ FROM  `T_test_paleofriendly` AS t CROSS JOIN `Avg_paleofriendly` AS av
+ cross join `Min_paleofriendly` as min_paleofriendly
+CROSS JOIN `STDDEV_paleofriendly` AS std),
+ 
+ `temp_tabl_7` as ( SELECT * FROM `temp_tabl_6` UNION ALL SELECT * FROM  `paleofriendly_data`),
+
+ 
+  `T_test_wholefoodsdiet`  AS (SELECT DISTINCT 'wholefoodsdie'	AS diet_pref,
+
+FORMAT ((   (SELECT AVG(price_per_g) FROM `Yes_wholefoodsdiet`) - (SELECT AVG(price_per_g) FROM `No_wholefoodsdiet`))  
+				/ 
+		(
+			 SQRT(
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `Yes_wholefoodsdiet`)) / (SELECT COUNT(price_per_g) FROM `Yes_wholefoodsdiet`))
+		+ 
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `No_wholefoodsdiet`)) / (SELECT COUNT(price_per_g) FROM `No_wholefoodsdiet`))
+				  ) 
+		) 
+		,2 )AS t_test  FROM `TB`),
+
+`Avg_wholefoodsdiet` AS (				(SELECT (SELECT AVG(price_per_g) FROM `TB` WHERE wholefoodsdiet = 1 )as  avg_1,
+ AVG(price_per_g)as avg_0 FROM `TB` WHERE wholefoodsdiet = 0) ),
+ 
+ 
+  `STDDEV_wholefoodsdiet` AS (			(SELECT (SELECT FORMAT( STDDEV(price_per_g),2) FROM `TB` WHERE wholefoodsdiet  = 1 )as  Std_1,
+ AVG(price_per_g)as Std_0 FROM `TB` WHERE wholefoodsdiet = 0) ),
+ 
+ `Min_wholefoodsdiet` AS (				(SELECT (SELECT MIN(price_per_g) FROM `TB` WHERE wholefoodsdiet = 1 )as  min_1,
+ min(price_per_g)as min_0 FROM `TB` WHERE wholefoodsdiet = 0) ),
+ 
+ `wholefoodsdiet_data` AS (SELECT 'wholefoodsdiet', t.t_test, av.avg_1 , av.avg_0 , min_wholefoodsdiet.min_1, min_wholefoodsdiet.min_0, Std_1, Std_0
+ FROM  `T_test_wholefoodsdiet` AS t CROSS JOIN `Avg_wholefoodsdiet` AS av
+ cross join `Min_wholefoodsdiet` as min_wholefoodsdiet
+ CROSS JOIN `STDDEV_wholefoodsdiet` AS std),
+ 
+ 
+ `temp_tabl_8` as ( SELECT * FROM `temp_tabl_7` UNION ALL SELECT * FROM  `wholefoodsdiet_data`),
+
+ 
+ 
+ 
+ 
+ 
+   `T_test_lowsodium` AS (SELECT DISTINCT 'lowsodium'	AS diet_pref,
+
+FORMAT ((   (SELECT AVG(price_per_g) FROM `Yes_lowsodium`) - (SELECT AVG(price_per_g) FROM `No_lowsodium`))  
+				/ 
+		(
+			 SQRT(
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `Yes_lowsodium`)) / (SELECT COUNT(price_per_g) FROM `Yes_lowsodium`))
+		+ 
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `No_lowsodium`)) / (SELECT COUNT(price_per_g) FROM `No_lowsodium`))
+				  ) 
+		) 
+		,2 )AS t_test  FROM `TB`),
+
+`Avg_lowsodium` AS (				(SELECT (SELECT AVG(price_per_g) FROM `TB` WHERE lowsodium = 1 )as  avg_1,
+ AVG(price_per_g)as avg_0 FROM `TB` WHERE lowsodium = 0) ),
+ 
+ `STDDEV_lowsodium` AS (			(SELECT (SELECT FORMAT( STDDEV(price_per_g),2) FROM `TB` WHERE lowsodium  = 1 )as  Std_1,
+ AVG(price_per_g)as Std_0 FROM `TB` WHERE lowsodium = 0) ),
+ 
+ `Min_lowsodium` AS (				(SELECT (SELECT MIN(price_per_g) FROM `TB` WHERE lowsodium = 1 )as  min_1,
+ min(price_per_g)as min_0 FROM `TB` WHERE lowsodium = 0) ),
+ 
+ `lowsodium_data` AS (SELECT 'lowsodium', t.t_test, av.avg_1 , av.avg_0 , min_lowsodium.min_1, min_lowsodium.min_0, Std_1, Std_0
+ FROM  `T_test_lowsodium` AS t CROSS JOIN `Avg_lowsodium` AS av
+ cross join `Min_lowsodium` as min_lowsodium
+  CROSS JOIN `STDDEV_lowsodium` AS std),
+ 
+ `temp_tabl_9` as ( SELECT * FROM `temp_tabl_8` UNION ALL SELECT * FROM  `lowsodium_data`),
+
+ 
+ `T_test_kosher` AS (SELECT DISTINCT 'kosher'	AS diet_pref,
+
+FORMAT ((   (SELECT AVG(price_per_g) FROM `Yes_kosher`) - (SELECT AVG(price_per_g) FROM `No_kosher`))  
+				/ 
+		(
+			 SQRT(
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `Yes_kosher`)) / (SELECT COUNT(price_per_g) FROM `Yes_kosher`))
+		+ 
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `No_kosher`)) / (SELECT COUNT(price_per_g) FROM `No_kosher`))
+				  ) 
+		) 
+		,2 )AS t_test  FROM `TB`),
+
+`Avg_kosher` AS (				(SELECT (SELECT AVG(price_per_g) FROM `TB` WHERE kosher = 1 )as  avg_1,
+ AVG(price_per_g)as avg_0 FROM `TB` WHERE kosher = 0) ),
+ 
+  `STDDEV_kosher` AS (			(SELECT (SELECT FORMAT( STDDEV(price_per_g),2) FROM `TB` WHERE kosher  = 1 )as  Std_1,
+ AVG(price_per_g)as Std_0 FROM `TB` WHERE kosher = 0) ),
+ 
+ `Min_kosher` AS (				(SELECT (SELECT MIN(price_per_g) FROM `TB` WHERE kosher = 1 )as  min_1,
+ min(price_per_g)as min_0 FROM `TB` WHERE kosher = 0) ),
+ 
+ `kosher_data` AS (SELECT 'kosher', t.t_test, av.avg_1 , av.avg_0 , min_kosher.min_1, min_kosher.min_0, Std_1, Std_0
+ FROM  `T_test_kosher` AS t CROSS JOIN `Avg_kosher` AS av
+ cross join `Min_kosher` as min_kosher
+CROSS JOIN `STDDEV_kosher` AS std),
+ 
+ `temp_tabl_10` as ( SELECT * FROM `temp_tabl_9` UNION ALL SELECT * FROM  `kosher_data`),
+ 
+
+ 
+ 
+
+ `T_test_lowfat` AS (SELECT DISTINCT 'lowfat'	AS diet_pref,
+
+FORMAT ((   (SELECT AVG(price_per_g) FROM `Yes_lowfat`) - (SELECT AVG(price_per_g) FROM `No_lowfat`))  
+				/ 
+		(
+			 SQRT(
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `Yes_lowfat`)) / (SELECT COUNT(price_per_g) FROM `Yes_lowfat`))
+		+ 
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `No_lowfat`)) / (SELECT COUNT(price_per_g) FROM `No_lowfat`))
+				  ) 
+		) 
+		,2 )AS t_test  FROM `TB`),
+
+`Avg_lowfat` AS (				(SELECT (SELECT AVG(price_per_g) FROM `TB` WHERE lowfat = 1 )as  avg_1,
+ AVG(price_per_g)as avg_0 FROM `TB` WHERE lowfat = 0)  ),
+ 
+   `STDDEV_lowfat` AS (			(SELECT (SELECT FORMAT( STDDEV(price_per_g),2) FROM `TB` WHERE lowfat  = 1 )as  Std_1,
+ AVG(price_per_g)as Std_0 FROM `TB` WHERE lowfat = 0) ),
+ 
+ `Min_lowfat` AS (				(SELECT (SELECT MIN(price_per_g) FROM `TB` WHERE lowfat = 1 )as  min_1,
+ min(price_per_g)as min_0 FROM `TB` WHERE kosher = 0)  ),
+ 
+ `lowfat_data` AS (SELECT 'lowfat', t.t_test, av.avg_1 , av.avg_0 , min_lowfat.min_1, min_lowfat.min_0, Std_1, Std_0
+ FROM  `T_test_lowfat` AS t CROSS JOIN `Avg_lowfat` AS av
+ cross join `Min_lowfat` as min_lowfat
+ CROSS JOIN `STDDEV_lowfat` AS std),
+ 
+ `temp_tabl_11` as ( SELECT * FROM `temp_tabl_10` UNION ALL SELECT * FROM  `lowfat_data`)
+,
+ 
+  `T_test_engine2` AS (SELECT DISTINCT 'engine2'	AS diet_pref,
+
+FORMAT ((   (SELECT AVG(price_per_g) FROM `Yes_engine2`) - (SELECT AVG(price_per_g) FROM `No_engine2`))  
+				/ 
+		(
+			 SQRT(
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `Yes_engine2`)) / (SELECT COUNT(price_per_g) FROM `Yes_engine2`))
+		+ 
+		(((SELECT STDDEV(price_per_g)*STDDEV(price_per_g) FROM `No_engine2`)) / (SELECT COUNT(price_per_g) FROM `No_engine2`))
+				  ) 
+		) 
+		,2 )AS t_test  FROM `TB`),
+
+`Avg_engine2` AS (				(SELECT (SELECT AVG(price_per_g) FROM `TB` WHERE engine2 = 1 )as  avg_1,
+ AVG(price_per_g)as avg_0 FROM `TB` WHERE engine2 = 0)  ),
+ 
+    `STDDEV_engine2` AS (			(SELECT (SELECT FORMAT( STDDEV(price_per_g),2) FROM `TB` WHERE engine2  = 1 )as  Std_1, 
+ AVG(price_per_g)as Std_0 FROM `TB` WHERE engine2 = 0) ),
+ 
+ `Min_engine2` AS (				(SELECT (SELECT MIN(price_per_g) FROM `TB` WHERE engine2 = 1 )as  min_1,
+ min(price_per_g)as min_0 FROM `TB` WHERE engine2 = 0) ),
+ 
+ `engine2_data` AS (SELECT 'engine2', t.t_test, av.avg_1 , av.avg_0 , min_engine2.min_1, min_engine2.min_0, Std_1, Std_0
+
+ FROM  `T_test_engine2` AS t CROSS JOIN `Avg_engine2` AS av
+ cross join `Min_engine2` as min_engine2
+  CROSS JOIN `STDDEV_engine2` AS std),
+ 
+ `temp_tabl_12` as ( SELECT * FROM `temp_tabl_11` UNION ALL SELECT * FROM  `engine2_data`)
+  
+
+ SELECT  vegan, t_test, FORMAT(avg_1,4) AS avg1, FORMAT(avg_0,2) AS avg0, FORMAT(min_1,2) as min1, FORMAT(min_0,2) as min0, Std_1, Std_0
+ FROM `temp_tabl_12`;
