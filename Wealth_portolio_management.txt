@@ -1,0 +1,255 @@
+
+USE invest;
+
+WITH 			`Table_1` AS 
+								(SELECT account_id, ticker , `date`, 
+                                quantity AS number_stocks, 
+								`value` AS last_price, 
+								(`value` * quantity) AS total_value, 
+                                minor_asset_class, major_asset_class 
+								
+                                FROM holdings_current
+								LEFT JOIN security_masterlist
+								USING (ticker)
+                                ),
+                                
+                               	-- WITH fucntion useful to join my tables all together  USING ticker 
+                                -- We select what we need, as well as the price of stocks by their quantity 
+                                -- The we progressively build our table block by block joining on the right
+
+ -- GOOD -- SELECT * FROM `Table_1`; 
+
+
+			`Adjusted_price` AS (SELECT date, `value` AS price ,						 -- we selected adjusted price to be more precise 
+									CASE WHEN ticker = '' THEN '' ELSE ticker END AS ticker  -- we use '' in order to display all the tickers
+									
+                                    FROM pricing_daily_new 
+                                    WHERE price_type = 'Adjusted'  
+									AND date > subdate((SELECT MAX(date)  -- we take the latest date 2022-09-09 and subtract for the max with 2 year interval
+									FROM pricing_daily_new), interval 24 month)
+                                ),
+                                
+-- GOOD --  SELECT * FROM `Adjusted_price` ;           
+    
+    
+
+				`Lag_price_t` AS (SELECT *, 							-- this table is to differ the resuslt with function lag 
+									LAG (price,1,NULL) 					-- 1 day lag, 5 for a week, 21 for a month 
+                                    OVER  --  1 day lag, 5 for a week, 21 for a month
+                                    (PARTITION BY ticker order by date) AS last_day_price , -- partition by will shift the ticker by year  
+									LAG (price,250,0) 										
+                                    OVER 
+                                    (PARTITION BY ticker order by date)  AS last_12month_price, --  yearly lag 21 * 12 = 252 we rounded up 
+									LAG (price,375,0) 
+                                    OVER 
+                                    (PARTITION BY ticker order by date)  AS last_18month_price,  -- 18 months  21 * 12 = 378 we rounded up
+									LAG (price,500,0) 
+                                    OVER 
+                                    (PARTITION BY ticker order by date)  AS last_24month_price -- 2 years  21 * 24 = 504 we rounded up
+                                  
+                                    FROM `Adjusted_price`
+								),
+                                    
+ -- GOOD -- SELECT * FROM `Lag_price_t`;
+                                    
+							                                    
+								
+                                    
+								
+				`Table_STD` AS ( SELECT date, ticker, price, last_day_price,  -- we do a Standar deviation table to see the volatility (how to move from the mean)
+                
+                                    ((price - last_day_price )/ last_day_price ) AS Daily_return -- p1-po/po
+									FROM `Lag_price_t`
+								    WHERE date > subdate((SELECT MAX(date) FROM pricing_daily_new), interval 12 month)
+                                ),
+					
+                                
+-- GOOD -- SELECT * FROM `Table_STD` ;       
+                                
+                                
+	
+				`STDV_12` AS (SELECT STD(Daily_return)*100 AS STDV_12month, ticker -- this is the yearly volatility
+							FROM `Table_STD`
+                            GROUP BY ticker
+                            
+                            ),
+                            
+    -- GOOD --  SELECT * FROM `STDV_12` ;  
+        
+         
+         
+	
+                            
+                                    
+		
+               `Lag_price_1`  AS ( SELECT * FROM `Lag_price_t`
+								WHERE date = ((SELECT MAX(date) FROM pricing_daily_new))
+                                AND last_day_price IS NOT NULL
+							),
+					
+                    
+                    
+                    
+         -- GOOD --        --  SELECT * FROM `Lag_price_1` ;
+                    
+                    
+                    
+				`Return` AS (SELECT *, 
+								((price - last_day_price )/last_day_price )*100 AS ratio_daily, -- We use the P1-po/po for daily return
+                                ((price - last_12month_price)/last_12month_price)*100 AS ratio_12month, -- We use the P1-po/po for yearly return
+								((price - last_18month_price)/last_18month_price)*100 AS ratio_18month, -- We use the P1-po/po for year and half return
+								((price - last_24month_price)/last_24month_price)*100 AS ratio_24month -- We use the P1-po/po for 2years return
+                        
+								FROM `Lag_price_1`
+                                
+						 ),
+                        
+                        
+                -- GOOD  --   SELECT * FROM `Return` ; 
+                        
+                        
+                        
+                        
+                        
+                 `Risk_free_return`  AS (SELECT *, '0' AS RFR -- the risk free return is 
+								FROM `Return`
+                                LEFT JOIN `STDV_12`
+                                USING (ticker)
+                                
+						 ),
+                                
+                        
+-- SELECT * FROM `Risk_free_return`;
+                        
+                        
+                        
+							
+                 `OUTCOME` AS(   SELECT *, ((ratio_12month - RFR )/STDV_12month) AS SHARP_RATIO -- we devide tby the standard deviation and determine “excess return” for a given period of time
+								FROM      `Risk_free_return`     
+						  ),
+                            
+                   -- GOOD 	--    SELECT * FROM `OUTCOME` ;
+                           
+                           
+				
+                        
+                            
+				`PORTFOLIO`  AS (     SELECT account_id, TB.ticker, TB.date, price,
+									number_stocks,
+									 total_value, 
+                                    ratio_daily, 
+                                    ratio_12month, 
+                                    ratio_18month,
+                                    ratio_24month, 
+                                    STDV_12month,
+									RFR, SHARP_RATIO, 
+                                    major_asset_class, 
+                                    minor_asset_class 
+									FROM `Table_1` AS TB 
+									LEFT JOIN `OUTCOME` AS OC 
+                                    USING(ticker) 
+							),
+                            
+                            
+                                
+                        
+                            
+		`OUTCOME_TABLE` AS( 		SELECT client_id, account_id, date, ticker, opt38_desc, price, number_stocks,
+									total_value, ratio_12month, ratio_18month, ratio_24month, 
+									RFR, SHARP_RATIO, major_asset_class, minor_asset_class, STDV_12month  
+                                    
+                                    FROM `PORTFOLIO` LEFT JOIN account_dim USING (account_id)
+						)
+                        
+				SELECT * FROM `OUTCOME_TABLE`
+			-- WHERE client_id = '141';
+			-- WHERE client_id = '744'
+		 WHERE client_id = '860';
+        -- we did randomly select 3 clients in the database                  
+                                
+                                
+                -- 
+                
+                SELECT ticker, AVG(returns) AS mu,
+STD(returns) AS sigma,
+AVG(returns)/STD(returns) AS risk_adj_returns
+FROM invest.jt_return
+INNER JOIN customer_details
+USING (ticker)
+GROUP BY client_id
+ORDER BY risk_adj_returns DESC;
+
+-- risk is the benefit for 1 units of risk 
+-- check worst & link with clients 
+
+
+ /* STD(returns) as sigma, 
+AVG(returns) / STD (returns) as risk_adj_returns
+FROM 
+GROUP by ticker ; */
+
+
+-- -------------------------------------------
+--------------------------------------------
+----------------------------------------------
+
+----------------------------------------------
+THIS SECOND PART OF THE CODE WAS OUR FIRST BASE AND WE USED TO GET THE WEIGHT OF TICKERS PER PORTOFLIO 
+
+WITH 
+		adjust_table AS (
+							SELECT * FROM pricing_daily_new WHERE price_type = 'Adjusted') ,
+        
+        holdings_current2 AS (
+								
+                                SELECT row_names, account_id, ticker, `date`, variable, value,
+										price_type, quantity,
+                                        ( `value` * quantity) 										AS total_value 
+								FROM holdings_current),
+       
+        
+        table_total AS (SELECT row_names, date, variable, `value`, ticker, price_type,
+        
+								FORMAT (	lag (value,1,0) OVER (ORDER BY `date`) 
+                                ,3 		)
+                                AS last_day_price ,
+                                
+								FORMAT  (   (`value` - lag (value,1,0) OVER (ORDER BY `date`)) 
+                                , 2 	) 
+                                AS change_dod,
+                                
+								FORMAT (   (  ( (`value` - lag (value,1,0) OVER (ORDER BY `date`)) ) 
+                                
+								/
+                                                (lag (value,1,0) OVER (ORDER BY `date`))
+											)  * 100
+								,2 		) 												
+																									AS percent_change
+						FROM adjust_table),
+            
+ 
+            
+                        
+		`SUM_account` AS ( SELECT hc.account_id, hc.date, 'Total',
+								SUM(hc.value), SUM(hc.quantity),SUM(hc. total_value) 				AS sum_total,
+								
+                            FORMAT(  (  SUM(hc.total_value)/ SUM(hc. total_value))*100,2),
+							'N/A' , 'N/A '
+						FROM holdings_current2 AS hc
+						LEFT JOIN security_masterlist AS sm
+						USING (ticker)
+						WHERE hc.account_id = '71'),
+         
+          
+`client_account_71` AS ( SELECT hc.account_id, hc.date, hc.ticker,
+							hc.value, hc.quantity,hc.total_value,
+							FORMAT((total_value / (SELECT sum_total FROM SUM_account))*100,2) AS part_portfolio,
+							sm.major_asset_class, sm.minor_asset_class
+					FROM holdings_current2 AS hc
+					LEFT JOIN security_masterlist AS sm
+					USING (ticker)
+					WHERE hc.account_id = '71'
+					UNION ALL SELECT * FROM SUM_account)
+			
+                    
+SELECT * FROM `client_account_71` ;   
