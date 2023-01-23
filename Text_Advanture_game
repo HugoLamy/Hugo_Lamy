@@ -1,0 +1,512 @@
+### Print welcome message
+import random 
+import time 
+import colorama
+from colorama import Fore
+
+
+print ( """"
+
+𝖶𝖾𝗅𝖼𝗈𝗆𝖾 𝗍𝗈
+                                  Wᴏʀʟᴅ ᴏғ Wᴀʀᴄʀᴀғᴛ®   """)
+print (Fore.YELLOW + """"                               
+    
+           ░██╗░░░░░░░██╗░█████╗░██████╗░██╗░░░░░██████╗░  ░█████╗░███████╗
+           ░██║░░██╗░░██║██╔══██╗██╔══██╗██║░░░░░██╔══██╗  ██╔══██╗██╔════╝
+           ░╚██╗████╗██╔╝██║░░██║██████╔╝██║░░░░░██║░░██║  ██║░░██║█████╗░░
+           ░░████╔═████║░██║░░██║██╔══██╗██║░░░░░██║░░██║  ██║░░██║██╔══╝░░
+           ░░╚██╔╝░╚██╔╝░╚█████╔╝██║░░██║███████╗██████╔╝  ╚█████╔╝██║░░░░░
+           ░░░╚═╝░░░╚═╝░░░╚════╝░╚═╝░░╚═╝╚══════╝╚═════╝░  ░╚════╝░╚═╝░░░░░
+
+           ░██╗░░░░░░░██╗░█████╗░██████╗░░█████╗░██████╗░░█████╗░███████╗████████╗
+           ░██║░░██╗░░██║██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔════╝╚══██╔══╝
+           ░╚██╗████╗██╔╝███████║██████╔╝██║░░╚═╝██████╔╝███████║█████╗░░░░░██║░░░
+           ░░████╔═████║░██╔══██║██╔══██╗██║░░██╗██╔══██╗██╔══██║██╔══╝░░░░░██║░░░
+           ░░╚██╔╝░╚██╔╝░██║░░██║██║░░██║╚█████╔╝██║░░██║██║░░██║██║░░░░░░░░██║░░░
+           ░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░░░░░░░╚═╝░░░
+
+                                █▓▒▓█▀██▀█▄░░▄█▀██▀█▓▒▓█
+                                █▓▒░▀▄▄▄▄▄█░░█▄▄▄▄▄▀░▒▓█
+                                █▓▓▒░░░░░▒▓░░▓▒░░░░░▒▓▓█
+                                
+                                
+
+
+    
+""" + Fore.RESET)
+time.sleep(1) #time sleep helps me to display text automatically and choice the delay 
+
+print(Fore.BLUE + '''My name is  KADGHAR !''' + Fore.RESET) #fore. is used to change the color of the text
+time.sleep(2)
+
+print("""
+I am the Archmage of this world!
+""") 
+time.sleep(2) #is used to delay while displaying text on the screen 
+
+
+print("""You are here to complete an imporant quest!
+""") 
+
+print("""You cannot see me for now.....
+
+
+         You have been sent here to help me saving this world! 
+         The people living in our world  are threaten by Monsters from all kind.
+         You have been chosen by our king to defeat them.
+         I will guide you through this mission and provide you power! 
+         With your help, we can collect blood from those monsters.
+         I need this blood to create a potion that will bring them back wherever they come from. 
+         
+         """)
+time.sleep(15)
+
+print("""In order to see me, you have to write my name.
+""") 
+time.sleep(2)
+
+print("""
+Careful with the spelling!!
+""")
+ans = ['kadghar', 'KADGHAR'] #ans is used to store what input are required in order to move on
+
+respond = input("""
+►""") 
+
+#In order to display an image 
+from IPython.display import Image, display
+window_url = "https://static.wikia.nocookie.net/wowpedia/images/5/53/Khadgar_HS_cropped.jpg/revision/latest?cb=20160416122417.jpg"
+
+tries = 2 #to memorize how many attempts the player has
+while tries > 0 :
+
+
+
+    if respond in ans: #nested condition 
+        display(Image(data=window_url, width=300, height=300)) #display image
+        tries == 0
+        break
+    elif tries == 1:
+        tries == 0
+        print('FAIL')
+        break
+        quit()
+
+    else:
+        tries -= 1 #this -=  is used to remove an attempt to the previous one 
+        print(f''' 
+        
+        You have {tries} more try''') #this dynamic printing is used to implement function 
+        print(Fore.RED +"""
+
+█░█ █▀█ █░█░█   █▀▀ ▄▀█ █▄░█   █▄█ █▀█ █░█   █▀▀ ▄▀█ █ █░░   ▀█   █▄▄ █▀▀   █▀▀ █▀█ █▀▀ █░█ █▀ █
+█▀█ █▄█ ▀▄▀▄▀   █▄▄ █▀█ █░▀█   ░█░ █▄█ █▄█   █▀░ █▀█ █ █▄▄   ░▄   █▄█ ██▄   █▀░ █▄█ █▄▄ █▄█ ▄█ ▄
+
+…………………▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+……………▄▄█▓▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓█▄▄
+…………▄▀▀▓▒░░░░░░░░░░░░░░░░▒▓▓▀▄
+………▄▀▓▒▒░░░░░░░░░░░░░░░░░░░▒▒▓▀
+…..▌▓▀▒░░░░░░░░░░░░░░░░░░░░░░░░▒▀
+……..█▓█▒░░░░░░░░░░░░░░░░░░░░░▒▓▒▓
+…█▓█▒░░░░░░░░░░░░░░░░░░░░░░░░░░░▒█
+..█▓█▒░▒▒▒▒░░▀▀█▄▄░░░░░▄▄█▀▀░░▒▒▒▒░
+.█▓▌▒▒▓▓▓▓▄▄▄▒▒▒▀█░░░░█▀▒▒▒▄▄▄▓▓▓▓▒
+.██▌▒▓███▓█████▓▒▐▌░░▐▌▒▓████▓████▓
+..█▓▒░▒▓███████▓▓▄▀░░▀▄▓▓███████▓▒░
+….█▓▒░▒▒▓▓▓▓▄▄▄▀▒░░░░░▒▀▄▄▄▓▓▓▓▒▒░▓
+……█▓▒░▒▒▒▒░░░░░░▒▒▒▒░░░░░░▒▒▒▒░▒▓
+………█▓▓▒▒▒░░██░░▒▓██▓▒░░██░░▒▒▒▓▓
+………▀██▓▓▓▒░░▀░▒▓████▓▒░▀░░▒▓▓▓
+………….█▄░░▀█▓▒░░░░░░░░░░▒▓█▀░░
+…………..█▓█░░█▓▒▒▒░░░░░▒▒▒▓█░░
+…………….█▓█░░█▀█▓▓▓▓▓▓█▀░░█░
+……………..█▓▓█░█░█░█▀▀▀█░█░▄▀
+……………..█▓▓█░░▀█▀█░█░█▄█▀░
+………………█▓▒▓█░░░░▀▀▀▀░░░░░█
+………………█▓▒▒▓█░░░░ ░░░░░░░█
+……………………▀█▓▓▓▓▒▒▒▒▓▓▓▓█▀
+………………………..▀▀██▓▓▓▓██▀
+
+""" + Fore.RESET)
+        respond = input('try again')
+time.sleep(1)  
+
+print("""
+
+Hey !!!! Sorry for this sketchy introduction.
+Just for you to know, I accepted those answers:""")
+for words in ans: #for loop
+    print(words)
+
+print(""""
+Anyway, it is nice to meet you.
+
+""")
+time.sleep(3)
+
+    
+name = str(input("""
+What is your name?
+►"""))
+NAME = name.upper() #This .upper helps to print in full caps
+
+
+print(f"""
+Amazing {NAME}! This is going to be hard. Can I count on you ?""")
+ans = ['Yes', 'yes', 'YES', 'yep', 'yeah'] #nest the answers in a list 
+respond = input("""
+►""")
+
+if respond in ans:
+    print(f""" 
+ You are a brave wizard {NAME}! Fast! Come with me!  """)
+time.sleep(1)
+    
+if respond not in ans:
+    print(""" 
+ Anyway this quest is your fate!!!!! You must accomplish it!""")
+time.sleep(2)
+
+
+#Giving format to SPE and ROOMS in order for player to choose with 1,2,3
+FROST = '1'
+FIRE= '2'
+ARCANE = '3'
+
+BLUE = '1'
+RED = '2'
+PURPLE = '3'
+
+#Giving format to my spells
+S1 = 'You cast a spell'
+S2 = 'You cast a defensive spell' 
+S3 = 'Immune yourself against damage'
+
+#Giving format to my spells
+F1 = 'Frost bolt'
+F2 = 'Iceblock'
+F3 = 'Silence' 
+
+FF1 = 'Fireball'
+FF2 = 'Dragonbreath'
+FF3 = 'Blink'
+
+A1 = 'Energy blast'
+A2 = 'Sheep your enemy'
+A3 = 'Silence'
+
+#Giving format to my opponents 
+M1 = '𝗚𝗜𝗔𝗡𝗧 𝗪𝗛𝗜𝗧𝗘 𝗕𝗘𝗔𝗥'
+M2 = '𝗠𝗔𝗚𝗠𝗔 𝗗𝗘𝗠𝗢𝗡'
+M3 = '𝗗𝗥𝗔𝗚𝗢𝗡'
+
+#Giving format to my rooms
+D1 = 'Frozen Castle'
+D2 = 'Volcano'
+D3 = 'Cave'
+
+#Giving format to my specialization
+SS = 'Frost Mage'
+SS2 = 'Fire Mage'
+SS3 = 'Arcane Mage'
+
+#Defining lists to display them later on 
+list_spell =   ['1. Frost Bolt' ,'2. Iceblock','3. Silence']
+list_spell_f = ['1. Fireball', '2. Dragonbreath', '2. Blink']
+list_spell_a = ['1. Energy Blast, 2. Sheep','3. Silence']
+    
+
+
+
+def ROOM(): #Create a function 
+
+ 
+    print(""" You must choose between these 3 gates
+    """) 
+    print(f"""Press ⓵ for BLUE """)
+    print(f"""Press ② for RED """)
+    print(f"""Press ③ for PURPLE """)
+    time.sleep(1)
+    
+
+    portailchoice = input(
+    
+    """
+    ►""")
+
+    if(portailchoice == BLUE):
+        print(f"""
+    
+    You became a {SS}! And learnt 3 new spells! 
+    
+           ***************{list_spell}*****************************
+           
+            1    : You throw a powerfull ice energy that deal damage
+            2    : Immune yourself against damage
+            3    : prevent your ennemy to send spell
+            
+          """) 
+        time.sleep(2)
+        room_white_castle() #if Blue portails chosen then send to this room 
+        
+      
+    
+    if(portailchoice == RED):
+        print(f"""
+    
+    You became a {SS2}! And learnt 3 new spells!
+    
+            *******************{list_spell_f}*********************
+            
+            1     : You throw a powerfull fire ball that deal damage  
+            2     : to immune yourself against damage
+            3     : Teleports you forward 20 yds and frees you from all stuns and bonds
+            
+          """)
+        time.sleep(2)
+        magma() #if Red portails chosen then send to this room 
+        
+    if(portailchoice == PURPLE ):
+        print(f"""
+    
+    You became a {SS3}! And learnt 3 new spells!
+    
+            *******************{list_spell_a}*********************
+            
+            1     : You throw a blast of energy that deal damage  
+            2     : You turn your opponent into a sheep
+            3     : Teleports you forward 20 yds and frees you from all stuns and bonds
+            
+          """)
+        time.sleep(2)
+        cave() #if purple portails chosen then send to this room
+        
+    else:
+        print("Invalid entry. Please try again.\n")     
+        ROOM()
+
+        
+        
+        
+#This is to define a room              
+def room_white_castle(): #1st room 
+    
+    print(f""" You are facing a {M1} """)
+    print(""" You must choose between these 3 Spell
+    """) 
+    print(f"""Press ⓵ for {F1} """)
+    print(f"""Press ② for {F2} """)
+    print(f"""Press ③ for {F3} """)
+  
+ 
+
+    choice_spell = input(
+
+        """
+        ►""")
+
+    if(choice_spell == '1'): #If spell number 1 got chosen then it print this and ignore the rest 
+        print(f"""
+
+             You throw a powerfull energy {F1}, oh no! The WHITE BEAR is immune against this spell
+             You deal 0 damage. Try Again
+             
+              """)
+        time.sleep(3)
+        tryagain() #this recall the try again function 
+
+    if(choice_spell == '2' ):
+        print(f""" 
+            
+            You {F2}, and turned into ice. You are immune against damage
+            The white bear get bored and leave. But wait...
+            You must kill at least a monster! You are transferred in another gate.
+            You won't know the effect of your spells. Good luck!
+              """)
+        time.sleep(3)
+        magma() #this send you back to another room 
+
+    if(choice_spell == '3' ):
+        print(f"""
+             
+             You {F3} and prevent your ennemy to send spell. 
+             The white bear does not send spell and, therefore, comes to you.
+             Kadghar arrives adn save you by giving you one more chance. 
+              """)
+        time.sleep(2)
+        tryagain() #this makes you fail and displays the function 
+
+
+    else:
+        print("Invalid entry. Please try again.\n")
+        room_white_castle()
+        
+        
+
+def magma(): #2nd room 
+    print(f""" You are facing a {M2} 
+    """)
+    print(""" You must choose between these 3 Spell""") 
+    print(f"""Press ⓵ for {FF1} """)
+    print(f"""Press ② for {FF2} """)
+    print(f"""Press ③ for {FF3} """)
+    time.sleep(3)
+  
+ 
+    ans = ['2', '3'] #list that include acceptable answer in the list 
+    choice_spell = input(
+
+        """
+        ►""")
+
+    if(choice_spell == '1'):
+        print(f"""
+
+             You throw a {FF1}, ooh noo! The {M2} is immune against this spell !
+             He comes to you and kill you.
+              """)
+        time.sleep(3)
+        fail()
+
+    if(choice_spell == '2' ):
+        print(f""" 
+        
+              You {FF2}, oh no! The {M2} is immune against this spell !
+            
+              """)
+        tryagain()
+
+    if(choice_spell == '3' ):
+        print(f"""
+        
+             You {FF3}, teleports you forward 20 yds and you leave!
+                     
+              """)
+        time.sleep(3)
+        cave()
+
+    else:
+        print("Invalid entry. Please try again.\n")
+        magma() #This is to send you back in this room if you could not make it 
+    
+        
+        
+        
+#This is to define a room        
+def cave(): #3nd room 
+    print(f""" You are facing a chained {M3} 
+    """)
+    print(""" You must choose between these 3 Spell""") 
+    print(f"""Press ⓵ for {A1} """)
+    print(f"""Press ② for {A2} """)
+    print(f"""Press ③ for {A3} """)
+  
+ 
+
+    choice_spell = input(
+
+        """
+        ►""")
+            
+    if(choice_spell == '1'):
+        print(f"""
+
+             You throw a powerfull energy {A1}, oh no! The {M3} is immune against this spell.  
+              """)
+        time.sleep(3)
+        tryagain() 
+
+    if(choice_spell == '2' ):
+        print(f""" 
+        
+             You {A2},and morph the {M3} and you can kill it.
+            
+              """)
+        win()
+
+    if(choice_spell == '3' ):
+        print(f"""
+        
+             You {A3} {M3}, he cannot send its spell...but wait..
+             You must kill at least a monster! You are transferred in another gate.
+             You won't know the effect of your spells. Good luck!   
+              """)
+        time.sleep(3)
+        room_white_castle()
+
+    else:
+        print("Invalid entry. Please try again.\n")
+        cave()
+
+        
+def tryagain():     #this is de details of a function we used previously   
+    print("You've failed, try again!")
+    tries = 2
+while tries > 0 : # This is a while loop 
+
+
+    if respond in ans:
+        tries == 0
+        break
+    elif tries == 1:
+        tries == 0
+        print('FAIL')
+        break
+        quit()
+
+    else:
+        tries -= 1 #this removes the a try
+        print(f''' you have {tries} more try''')
+        
+        
+        
+        
+def end(): #this is de details of a function we used previously   
+    print(f"END OF THE GAME. THANKS FOR PLAYING {NAME}")
+    
+    
+    
+def fail(): #this is de details of a function we used previously   
+    print("You've failed, but thanks for playing!")
+    input('<Press E key to exit>\n')
+    leaving = ['E', 'e']
+    respond = input("""
+    ►""")
+    if leaving in respond :
+        end()
+    
+def win(): 
+    print("""
+    
+    
+██╗░░░██╗░█████╗░██╗░░░██╗  ░██╗░░░░░░░██╗░█████╗░███╗░░██╗░░░
+╚██╗░██╔╝██╔══██╗██║░░░██║  ░██║░░██╗░░██║██╔══██╗████╗░██║░░░
+░╚████╔╝░██║░░██║██║░░░██║  ░╚██╗████╗██╔╝██║░░██║██╔██╗██║░░░
+░░╚██╔╝░░██║░░██║██║░░░██║  ░░████╔═████║░██║░░██║██║╚████║░░░
+░░░██║░░░╚█████╔╝╚██████╔╝  ░░╚██╔╝░╚██╔╝░╚█████╔╝██║░╚███║██╗
+░░░╚═╝░░░░╚════╝░░╚═════╝░  ░░░╚═╝░░░╚═╝░░░╚════╝░╚═╝░░╚══╝╚═╝
+
+░██████╗░░█████╗░███╗░░██╗░██████╗░██████╗░░█████╗░████████╗░██████╗
+██╔════╝░██╔══██╗████╗░██║██╔════╝░██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
+██║░░██╗░██║░░██║██╔██╗██║██║░░██╗░██████╔╝███████║░░░██║░░░╚█████╗░
+██║░░╚██╗██║░░██║██║╚████║██║░░╚██╗██╔══██╗██╔══██║░░░██║░░░░╚═══██╗
+╚██████╔╝╚█████╔╝██║░╚███║╚██████╔╝██║░░██║██║░░██║░░░██║░░░██████╔╝
+░╚═════╝░░╚════╝░╚═╝░░╚══╝░╚═════╝░╚═╝░░╚═╝╚═╝░░╚═╝░░░╚═╝░░░╚═════╝░
+
+
+       KADGHAR IS ABLE TO COLLECT THE BLOOD!  """)
+    
+    input('<Press Q key to exit>\n') 
+    leaving = ['Q', 'q']
+    respond = input("""
+    ►""")
+    if leaving in respond :
+        end()
+      
+  
+        
+        
+        
+        
+
+ROOM() #this is to start the game by calling the first room
